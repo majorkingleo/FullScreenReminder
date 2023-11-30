@@ -5,11 +5,8 @@
 .deps
 .dirstamp
 Makefile
-supagrep
-supagrep.exe
-testsupagrep.exe
-forward.exe
-addpath.exe
+reminder
+reminder.exe
 
 # http://www.gnu.org/software/automake
 
