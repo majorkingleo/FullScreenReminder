@@ -14,15 +14,28 @@
 #include <QSettings>
 #include "AsyncOutDebug.h"
 #include <chrono>
+#include <format.h>
 
 using namespace std::chrono_literals;
 using namespace Tools;
+
+static std::string format_date_time( time_t t, const std::string fmt = "%Y-%m-%d %H:%M:%S" )
+{
+    char acBuf[100];
+    struct tm *ptm = localtime(&t);
+    strftime( acBuf, 100, fmt.c_str(), ptm );
+
+    return std::string(acBuf);
+}
+
 
 MainWindowQt::MainWindowQt( int argc, char **argv, QWidget *parent)
 : QMainWindow( parent ),
   lang()
 {
+#if 0
 	QSettings settings;
+
 	QAction *actionQuit;
 
 	QMenuBar *menuBar = new QMenuBar(this);
@@ -37,18 +50,52 @@ MainWindowQt::MainWindowQt( int argc, char **argv, QWidget *parent)
 	// new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_T), this, SLOT(newSearch()));
 
 	connect(actionQuit, SIGNAL (triggered()), QApplication::instance(), SLOT (quit()));
+#endif
 
-    auto *f = new QFrame();
-    setCentralWidget(f);
+	std::filesystem::path( "images" );
 
+	std::vector<std::filesystem::path> paths;
 
-    restoreGeometry(settings.value(CONFIG_MAIN_WIN_GEOMETRY).toByteArray());
+	for (const auto & entry : std::filesystem::directory_iterator("images")) {
+		CPPDEBUG( Tools::format( entry.path() ) );
+		paths.push_back(entry.path());
+	}
+
+	std::random_device rd; // obtain a random number from hardware
+	std::mt19937 gen(rd()); // seed the generator
+	std::uniform_int_distribution<> distr(1, paths.size()); // define the range
+
+	auto num = distr(gen);
+	CPPDEBUG( Tools::format( "num: %d", num ));
+
+	auto p = paths.at(num-1);
+
+    label = new QLabel();
+    label->setAlignment(Qt::AlignCenter | Qt::AlignCenter);
+    label->setStyleSheet(
+    		Tools::format("font-weight: bold; font-size: 300px;"
+    				"background-image: url('%s')",p.string()).c_str());
+    setCentralWidget(label);
+
+    timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &MainWindowQt::timeUpdate);
+    timer->start(1000);
+
+    timeUpdate();
+
+    // restoreGeometry(settings.value(CONFIG_MAIN_WIN_GEOMETRY).toByteArray());
 }
 
 MainWindowQt::~MainWindowQt()
 {
-	QSettings settings;
-	settings.setValue(CONFIG_MAIN_WIN_GEOMETRY, saveGeometry() );
+	// QSettings settings;
+	// settings.setValue(CONFIG_MAIN_WIN_GEOMETRY, saveGeometry() );
+}
+
+void MainWindowQt::timeUpdate()
+{
+    std::string text = format_date_time( time(0), "%H:%M:%S" );
+    label->setText( text.c_str() );
 }
 
 
@@ -144,7 +191,8 @@ int main(int argc, char **argv)
 	MainWindowQt mainwindow( argc, argv);
 
 	//mainwindow.move(200,200);
-	mainwindow.show();
+	//mainwindow.show();
+	mainwindow.showFullScreen();
 
 	int ret = 0;
 
