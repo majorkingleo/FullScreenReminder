@@ -10,7 +10,6 @@
 
 #include <qmainwindow.h>
 #include <qtabwidget.h>
-#include "setup.h"
 #include "lang.h"
 #include "search.h"
 
@@ -23,28 +22,14 @@ private:
 	 QTabWidget *tabs;
 
 	  Lang lang;
-	  Setup setup;
 
 public:
 	 explicit MainWindowQt( int argc, char **argv, QWidget *parent = 0);
 	 ~MainWindowQt();
 
-	 Setup & getSetup() { return setup; }
-
-	 void setTabTitle( int idx, const QString & text );
-
 	 std::wstring wLC( const std::wstring & s );
 	 const char* LC( const char * msg );
 	 QString wLCQ( const std::wstring & s );
-
-private slots:
-	 void newSearch();
-	 void closeSearch(int idx);
-	 void settingsEditors();
-	 void settingsFont();
-
-private:
-	 void newSearch( const Search::Config *conf );
 };
 
 #endif /* SRCQT_MAINQT_H_ */
